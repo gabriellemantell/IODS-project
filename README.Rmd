@@ -1,0 +1,5 @@
+# About the project
+
+This is for the course Introduction to Open Science
+
+[My Github Repository](https://github.com/gabriellemantell/IODS-project) 
