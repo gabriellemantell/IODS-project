@@ -1,5 +1,6 @@
 ---
 title: "IODS course project"
+author: "Gabrielle Mantell"
 output:
   html_document:
     theme: cosmo
