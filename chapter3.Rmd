@@ -8,7 +8,7 @@ library(tidyr); library(dplyr); library(ggplot2); library(GGally)
 alc <- read.table("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/alc.txt ", sep=",", header=TRUE)
 ```
 
-*WRITE ME >> The data used in this analysis is...A description of the variables in the dataset includes... The data has 382 observations and 35 variables as well as 166 rows and 7 columns.*
+The data used in this analysis is taken from school reports and questionnaires collected in 2008. It approaches student achievement in secondary education in two Portuguese schools and regard performance in two subjects: math (mat) and Portuguese language (por). The data has 382 observations and 35 variables.
 
 
 ```{r}
@@ -17,13 +17,8 @@ dim(alc)
 ```
 
 #### Analysis of variables
-*WRITE ME >> choose 4 variables present your personal hypothesis about their relationships with alcohol consumption: The four variables that I chose were: age, failures, Dalc, absences.*
+For this analysis I am interested in the following four variables and their relationship with alcohol consumption: sex (male or female), failures (number of past class failures), Dalc (workday alcohol consumption) and absences (number of school absences). I expect that failures, Dalc and absences will be indicators of a student who consumes higher levels of alcohol (high_use which is TRUE for students for which 'alc_use' is greater than 2 and FALSE otherwise). Additionally, I think that male students will be more likely to drink than female students.
 
-*hypothesese:* 
-*sex -- boys more likely to drink*
-*failures -- more failures more likely to drink*
-*Dalc -- drinking during the week more likely to drink more aka problem drinking (not just doing it socially)*
-*absenses -- missing more school, more likely to drink more (unless of course sick due to illness)*
 ```{r}
 data(alc, package = "COUNT")
 attach(alc)
@@ -38,13 +33,13 @@ table(high_use, absences)
 
 ```{r}
 g2 <- ggplot(alc, aes(x = high_use, y = failures, col = sex))
-g2 + geom_boxplot() + ylab("grade") + ggtitle("Student failures by alcohol consumption and sex")
+g2 + geom_boxplot() + ylab("failures") + ggtitle("Student failures by alcohol consumption and sex")
 
 g3 <- ggplot(alc, aes(x = high_use, y = Dalc, col = sex))
-g3 + geom_boxplot() + ylab("grade") + ggtitle("Student work day alcohol consumption by alcohol consumption and sex")
+g3 + geom_boxplot() + ylab("Dalc") + ggtitle("Student work day alcohol consumption by alcohol consumption and sex")
 
 g4 <- ggplot(alc, aes(x = high_use, y = absences, col = sex))
-g4 + geom_boxplot() + ylab("grade") + ggtitle("Student absences by alcohol consumption and sex")
+g4 + geom_boxplot() + ylab("absences") + ggtitle("Student absences by alcohol consumption and sex")
 
 ```
 
@@ -52,8 +47,7 @@ g4 + geom_boxplot() + ylab("grade") + ggtitle("Student absences by alcohol consu
 gather(alc) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar()
 ```
 
-*WRITE ME >> Comment on your findings and compare the results of your exploration to your previously stated hypotheses.*
-
+Nearly twice as many male students (41) than female students (71) were high_use which supports my initial hypothesis. The correlation between failures and absences is less clear as the figures for the predictor values decrease with each subsequent increase in high_use. Perhaps most interesting is that the Dalc is highest when high_use is 2, however from there it decreases as high_use increase. This is surprising.
 
 ### Logistic regression
 ```{r}
@@ -80,8 +74,9 @@ cbind(OR, CI)
 ```
 
 #### Analysis of the model
-*WRITE ME >> 1) Present and interpret a summary of the fitted model. 2) Present and interpret the coefficients of the model as odds ratios and provide confidence intervals for them. Interpret the results and compare them to your previously stated hypothesis.*
+Of the four predictor variables, absences (p-value = 0.006) and Dalc (p-value = <0.001). This further supports my hypothesis that absences and Dalc are predictors of students who will classify as high_use. On the other hand, failure and gender are not statistically significant predictors.
 
+The odds ratio of this model implies that a 1 unit increase in Dalc increases the odds of a student classifying as high_use by 4.45, while a 1 unit increase in absences increases the odds of a student classifying as high_use by 1.07. These results supports my original intuition, specifically that drinking in the day (Dalc) is correlated with high_use.
 
 
 #### Make predictions
@@ -141,7 +136,7 @@ loss_func(class = alc$high_use, prob = alc$probability)
 ```
 
 
-### 10 fold cross-validation
+#### 10 fold cross-validation
 ```{r}
 # K-fold cross-validation
 library(boot)
@@ -153,4 +148,4 @@ cv$delta[1]
 
 
 ### Analysis of predictions
-*Compute the total proportion of inaccurately classified individuals (= the training error) and comment on all the results. Compare the performance of the model with performance achieved by some simple guessing strategy.*
+In this model, 9% of the individuals were inaccurately classified. This figure remains the same even after conducting a 10-fold cross-validation. I would propose that a 91% prediction rate is a significant improvement on the results of a simple guessing strategy.
