@@ -105,7 +105,7 @@ test <- dplyr::select(test, -crime)
 lda.pred <- predict(lda.fit, newdata = test)
 table(correct = correct_classes, predicted = lda.pred$class)
 ```
-Looking at the cross tabulation shows that the predicted values are roughly in line with the correct values. 
+A cross tabulation shows that the predicted values are roughly in line with the correct values. 
 
 ```{r}
 # Reload dataset and standardize it
