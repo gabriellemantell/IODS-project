@@ -8,7 +8,7 @@ data("Boston")
 
 ```
 
-*ABOUT THE DATA HERE- Explore the structure and the dimensions of the data and describe the dataset briefly, assuming the reader has no previous knowledge of it.*
+This dataset contains variables relating to the housing values in the suburbs of Boston, USA. It consists of 506 rows and 14 columns. There are a number of variables within this dataset that have a strong positive or negative correlation. 
 
 ```{r}
 str(Boston)
@@ -22,8 +22,36 @@ cor_matrix<-cor(Boston)
 print(cor_matrix)
 corrplot(cor_matrix, method="circle", type = "upper", cl.pos = "b", tl.pos = "d", tl.cex = 0.6) %>% round(digits = 2)
 ```
+Variables with a positive correlation include: 
 
-*ABOUT THE DATA HERE - show summaries of the variables in the data. Describe and interpret the outputs, commenting on the distributions of the variables and the relationships between them.*
+- index of accessibility to radial highways and full-value property-tax rate per \$10,000.
+
+
+- proportion of non-retail business acres per town and nitrogen oxides concentration (parts per 10 million).
+
+
+- proportion of non-retail business acres per town andfull-value property-tax rate per \$10,000.
+
+
+- nitrogen oxides concentration (parts per 10 million) and proportion of owner-occupied units built prior to 1940.
+
+
+- average number of rooms per dwelling and median value of owner-occupied homes in \$1000s.
+
+Variables with a negative correlation include:
+
+
+- proportion of non-retail business acres per town and weighted mean of distances to five Boston employment centres.
+
+
+- nitrogen oxides concentration (parts per 10 million) and weighted mean of distances to five Boston employment centres.
+
+
+- proportion of owner-occupied units built prior to 1940 and weighted mean of distances to five Boston employment centres.
+
+
+- lower status of the population (percent) and median value of owner-occupied homes in \$1000s.
+
 
 ### Standardize dataset
 
@@ -34,7 +62,7 @@ class(boston_scaled)
 boston_scaled <- as.data.frame(boston_scaled)
 ```
 
-*WRITE ME - How did the variables change?*
+By standardizing the dataset, all variables now sit on a comparable scale. In This means that all variables are between 0 and 10. 
 
 ### Divide the dataset into train and test sets
 ```{r}
@@ -68,9 +96,50 @@ plot(lda.fit, col = classes, pch = classes, dimen = 2)
 lda.arrows(lda.fit, myscale = 1)
 ```
 
+Looking at the LDA plot we can see that approximately four different groups of variables are groued with two distinct clusters. Variables correlating with rad have the most distinct distribution within this model.
+
+###  Predict classes with LDA model
 ```{r}
 correct_classes <- test$crime
 test <- dplyr::select(test, -crime)
+lda.pred <- predict(lda.fit, newdata = test)
+table(correct = correct_classes, predicted = lda.pred$class)
+```
+Looking at the cross tabulation shows that the predicted values are roughly in line with the correct values. 
+
+```{r}
+# Reload dataset and standardize it
+library(MASS)
+data('Boston')
+boston_scaled <- scale(Boston)
+summary(boston_scaled)
+class(boston_scaled)
+boston_scaled <- as.data.frame(boston_scaled)
 ```
 
+### Calculate the distances between the observations
+
+```{r}
+dist_eu <- dist(Boston)
+summary(dist_eu)
+```
+
+### Run k-means algorithm 
+```{r}
+km <-kmeans(Boston, centers = 3)
+pairs(Boston, col = km$cluster)
+```
+
+
+### Find the optimal number of clusters
+```{r}
+set.seed(123)
+k_max <- 10
+twcss <- sapply(1:k_max, function(k){kmeans(Boston, k)$tot.withinss})
+qplot(x = 1:k_max, y = twcss, geom = 'line')
+km <-kmeans(Boston, centers = 2)
+pairs(Boston, col = km$cluster)
+```
+
+After calculating the distances between the observations and the WCSS, we can see that the optimal number of clusters is 2.
 
