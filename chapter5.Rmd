@@ -1,0 +1,120 @@
+# Dimensionality Reduction
+
+```{r}
+# Load libraries
+library(stringr); library(dplyr); library(GGally); library(corrplot); library(ggplot2); library(tidyr); library(MASS)
+
+# Load data
+human <- read.table("http://s3.amazonaws.com/assets.datacamp.com/production/course_2218/datasets/human2.txt", sep=",", header=TRUE)
+
+```
+### Description of data
+Data is taken from the United Nations Development Programme. It combines the following two indices: 
+
+Human Development Index (HDI): http://hdr.undp.org/en/composite/HDI
+
+Gender Inequality Index (GNI): http://hdr.undp.org/en/composite/GII
+
+For this analysis the two data sets have been combined by the variable 'country' while variables unnecessary for this analysis have beenr emoved. Additionally, the variable capturing Gross National Income (GNI) has been converted to a numerica variable.
+
+Definitions of the variables are as follows:
+
+GNI = Gross National Income per capita
+
+Life.Exp = Life expectancy at birth
+
+Edu.Exp = Expected years of schooling 
+
+Mat.Mor = Maternal mortality ratio
+
+Ado.Birth = Adolescent birth rate
+
+Parli.F = Percetange of female representatives in parliament
+
+Edu2.FM = Proportion of females with at least secondary education / Proportion of males with at least secondary education
+
+Labo.FM = Proportion of females in the labour force / Proportion of males in the labour force
+
+### Graphical overview of data
+```{r}
+summary(human)
+
+# visualize the 'human_' variables
+ggpairs(human)
+gather(human) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_density()
+
+# compute and visualise the correlation matrix
+cor_matrix<-cor(human) %>% round(digits=2)
+cor_matrix
+
+corrplot(cor_matrix, method="circle", type="upper", cl.pos = "b", tl.pos = "d",tl.cex = 0.6)
+
+```
+
+For the most part, variables are skewed, with the exception of ratio of expected secondary education for men and woman and expected years of schooling. There are some outliars in the data as seen in the scatterplots. Life expectancy is between 49 and 83 years of age. Strong positive correlations are seen between life expectancy and expected years of schooling (0.79) and maternal mortality and adolescent birth rate (0.76). On the other hand, strong negative correlations were seen between life expectancy and maternal mortality (-0.86), expected education and maternal mortality (-0.74) and life expectancy and adolescent birth rate (-0.73).
+
+### Perform PCA on non-standardized data
+```{r}
+# perform principal component analysis (with the SVD method)
+pca_human <- prcomp(human)
+
+# draw a biplot of the principal component representation and the original variables
+biplot(pca_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink2"))
+```
+
+### Perform PCA on standardized data
+```{r}
+# standardize the variables
+human_std <- scale(human)
+
+# perform principal component analysis (with the SVD method)
+pca_human <- prcomp(human_std)
+
+# draw a biplot of the principal component representation and the original variables
+biplot(pca_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink2"))
+```
+
+The biplot looks significantly different between the unstandardized and standardized data. The biplot of the unstandardized data sees the results bunched at the top end of the plot with GNI as an outlier as it is on a significantly different scale. Once standardized, we can begin to interpret the data. 
+
+There appear to be three principle components within the standardized data which are as follows:
+
+1) There is a relationship between maternal mortality and adolescent birth rates. This is intuitive as very young mothers may suffer more from complications in child birth.
+
+2) Another relationship is between the ratio between men and women in the work force and the percentage of female representatives in parliament. This is also intuitive as the more women there are in the work force the more likely it is that women will run for elected office.
+
+3) The final relationship presents a more complex relationship between expected level of education, ratio of men and women in secondary education and life expectancy.
+
+### Multiple Correspondence Analysis
+```{r}
+library(FactoMineR)
+data(tea)
+```
+
+```{r}
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+
+# select the 'keep_columns' to create a new dataset
+tea_time <- dplyr::select(tea, one_of(keep_columns))
+
+# look at the summaries and structure of the data
+str(tea_time)
+summary(tea_time)
+
+# visualize the dataset
+gather(tea_time) %>% ggplot(aes(value)) + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) + facet_wrap("key", scales = "free") 
+```
+
+### Run a multiple correspondance analysis on tea data
+
+```{r}
+# multiple correspondence analysis
+mca <- MCA(tea_time, graph = FALSE)
+
+# summary of the model
+summary(mca)
+
+# visualize MCA
+plot(mca, invisible=c("ind"), habillage = "quali")
+```
+
+Based on the plot we can see a relationship between those who buy unpackaged tea in tea shops (and possibly prefer green tea) as well as those who buy tea bags in chain stores. We can also see that both Dim.1 and Dim.2 have something to do with how and where people drink tea, whereas Dim.3 describes the type of tea, how they drink it and amount of sugar.
