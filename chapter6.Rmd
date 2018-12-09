@@ -7,10 +7,10 @@ RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/maste
 BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", sep  =" ", header = T)
 ```
 
-### Overview and description of data
-
-
 ### Part I: Analysis of RATS Data
+
+This data was taken from a nutrition study conducted on three groups of rats. The groups were put on different diets, and each animal's body weight (grams) was recorded repeatedly (approximately) weekly, except in week seven when two recordings were taken) over a 9-week period.
+
 ```{r}
 RATS$ID <- factor(RATS$ID)
 RATS$Group <- factor(RATS$Group)
@@ -33,7 +33,7 @@ ggplot(RATSL, aes(x = Time, y = Weight, group = ID)) +
   theme(legend.position = "top")
 ```
 
-While there is variability within the groups, overall, rats in group 1 showed slow weight gain, whereas rats in groups 2 and 3 started with a higher weight and also gained more weight over time. 
+While there is variability within the groups, rats in group 1 showed slow weight gain, whereas rats in groups 2 and 3 started with a higher weight and also gained more weight over time. 
 
 ### Standardise the variables
 
@@ -54,7 +54,7 @@ ggplot(RATSL, aes(x = Time, y = stdweight, group = ID)) +
   theme(legend.position = "top")
 ```
 
-*Analysis here*
+Once standardised we can see that the groups are on similar trajecties but maintain significant variance between the different groups.
 
 ```{r}
 
@@ -80,7 +80,7 @@ ggplot(RATSS, aes(x = Time, y = mean, linetype = Group, shape = Group)) +
   scale_y_continuous(name = "mean(Weight) +/- se(Weight)")
 ```
 
-*Analyse this*
+Again, we can see that there is a large difference between the mean of group 1 and groups 2 and 3. Groups 2 and 3 were larger to begin with and are gaining weight faster.
 
 ```{r}
 # Create summary data 
@@ -99,7 +99,7 @@ ggplot(RATSL8S, aes(x = Group, y = mean)) +
   scale_y_continuous(name = "mean(Weight), time")
 ```
 
-*Analyse this*
+This graph shows that group 1 had the lowest weight, group 3 had the highest weight and group 2 had the most variance in weight.
 
 ```{r}
 # Add the baseline from the original data as a new variable to the summary data
@@ -114,6 +114,10 @@ anova(fit)
 ```
 
 ### Part II: Analysis of BPRS Data
+This data consists of 40 male subjects who were randomly assigned to one of two treatment groups where each subject was rated on the brief psychiatric rating scale (BPRS) which is used to evaluate patients suspected of having schizophrenia. The BPRS was measured before treatment began on week 0 and then at weekly intervals until week 8. 
+
+BPRS assesses the level of 18 symptom constructs including hostility, suspiciousness, hallucinations and grandiosity. Each symptom construct is rated from 1 (not present) to 7 (extremely severe).
+
 ```{r}
 BPRS$treatment <- factor(BPRS$treatment)
 BPRS$subject <- factor(BPRS$subject)
@@ -135,18 +139,21 @@ ggplot(BPRSL, aes(x = week , y = bprs, linetype = subject)) +
   scale_y_continuous(limits = c(min(BPRSL$bprs), max(BPRSL$bprs)))
 ```
 
-*Summary of this*
+First we plotted the data to identify the observations in each group while ignoring the longitudinal nature of the data.
+
+The above plots show the different bprs scores gathered over an 8 week period for the different treatment groups. It's hard to pick up a discernable pattern, however.
 
 ### Create regression model
 ```{r}
-# create a regression model RATS_reg
+# create a regression model 
 BPRS_reg <- lm(bprs ~ week + treatment, data = BPRSL)
 
 # print out a summary of the model
 summary(BPRS_reg)
 ```
+Next, we created a linear regression model with bprs score as the intercept and week and treatment as explanatory variables.
 
-*Analysis*
+The regression analysis shows that there is a strong correlation between the intercept (bprs) and time (week) in treatment.
 
 ```{r}
 # Create a random intercept model
@@ -155,6 +162,7 @@ BPRS_ref <- lmer(bprs ~ week + treatment + (1 | subject), data = BPRSL, REML = F
 # Print the summary of the model
 summary(BPRS_ref)
 ```
+A random intercept is fit so that the lubear regression for each bprs score can differ in intercept for other subjects, thereby accounting for individual differences in the subject profiles.
 
 ```{r}
 # create a random intercept and random slope model
@@ -179,11 +187,11 @@ anova(BPRS_ref2, BPRS_ref1)
 # Create a vector of the fitted values
 Fitted <- fitted(BPRS_ref2)
 
-# Create a new column fitted to RATSL
+# Create a new column fitted to BPRSL
 BPRSL <- BPRSL %>%
   mutate(Fitted)
 
-# draw the plot of RATSL
+# draw a plot
 ggplot(BPRSL, aes(x = week, y = Fitted, group = subject)) +
   geom_smooth(aes(linetype = subject)) +
   scale_x_continuous(name = "Time",) +
@@ -191,3 +199,5 @@ ggplot(BPRSL, aes(x = week, y = Fitted, group = subject)) +
   theme(legend.position = "top")
 
 ```
+
+This chart shows that the longer a subject is in treatment, the lower their bprs score. We can assume therefore that treatment is effective at reducing the presentation of symptoms which may indicate schizophrenia.
