@@ -54,7 +54,7 @@ ggplot(RATSL, aes(x = Time, y = stdweight, group = ID)) +
   theme(legend.position = "top")
 ```
 
-Once standardised we can see that the groups are on similar trajecties but maintain significant variance between the different groups.
+Once standardised we can see that the groups are on similar trajecties but maintain significant variance between the rats.
 
 ```{r}
 
@@ -162,7 +162,7 @@ BPRS_ref <- lmer(bprs ~ week + treatment + (1 | subject), data = BPRSL, REML = F
 # Print the summary of the model
 summary(BPRS_ref)
 ```
-A random intercept is fit so that the lubear regression for each bprs score can differ in intercept for other subjects, thereby accounting for individual differences in the subject profiles.
+A random intercept is fit so that the linear regression for each bprs score can differ in intercept for other subjects, thereby accounting for individual differences in the subject profiles.
 
 ```{r}
 # create a random intercept and random slope model
