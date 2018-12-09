@@ -9,7 +9,7 @@ BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/maste
 
 ### Part I: Analysis of RATS Data
 
-This data was taken from a nutrition study conducted on three groups of rats. The groups were put on different diets, and each animal's body weight (grams) was recorded repeatedly (approximately) weekly, except in week seven when two recordings were taken) over a 9-week period.
+This data was taken from a nutrition study conducted on three groups of rats. The groups were put on different diets, and each animal's body weight (grams) was recorded repeatedly (approximately) weekly, except in week 7 when two recordings were taken. This was conducted over a 9-week period.
 
 ```{r}
 RATS$ID <- factor(RATS$ID)
@@ -141,7 +141,7 @@ ggplot(BPRSL, aes(x = week , y = bprs, linetype = subject)) +
 
 First we plotted the data to identify the observations in each group while ignoring the longitudinal nature of the data.
 
-The above plots show the different bprs scores gathered over an 8 week period for the different treatment groups. It's hard to pick up a discernable pattern, however.
+The above plots show the different bprs scores gathered over an 8 week period for the different treatment groups.
 
 ### Create regression model
 ```{r}
